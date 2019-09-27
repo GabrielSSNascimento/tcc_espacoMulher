@@ -1,0 +1,127 @@
+
+Criar primeiro o read.php
+Depois o create.php
+Depois o update.php
+Depois o delete.php
+
+
+#Componente coffeecode router
+
+Precisamos criar o arquivo .htaccess
+que permitirá a reescrita e gerenciamento de 
+urls no servidor
+veja:
+
+RewriteEngine On
+Options All -Indexes   // Garantir mais segurança (não permitir exibição de pastas internas)
+
+# ROUTER WWW Redirect.
+RewriteCond %{HTTP_HOST} !^www\. [NC] //  redireciona um usuário para uma url única
+RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301] //  redireciona um usuário para uma url única
+
+# ROUTER HTTPS Redirect
+RewriteCond %{HTTP:X-Forwarded-Proto} !https //  redireciona um usuário para uma url única( usando ssl + segurança)
+RewriteCond %{HTTPS} off //  redireciona um usuário para uma url única( usando ssl + segurança)
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]  //  redireciona um usuário para uma url única( usando ssl + segurança)
+
+# ROUTER URL Rewrite                    // Reescrita de arquivos - tudo será direcionado para o index.php
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?route=/$1
+
+
+// Componentes de Views (packagist)
+// Estudar:
+
+twig
+plates
+
+métodos de estudo
+
+public function fieb($data)
+    {
+         $urlTokenFieb = URL_TOKEN_FIEB;
+         $urlBaseFieb = URL_BASE_FIEB;
+        // echo $urlTokenFieb;
+         $client = new \GuzzleHttp\Client();
+        /* $response = $client->request('GET', 'https://api.github.com/repos/guzzle/guzzle');
+
+     echo $response->getStatusCode(); # 200
+     echo $response->getHeaderLine('content-type'); # 'application/json; charset=utf8'
+     echo $response->getBody(); # '{"id": 1420053, "name": "guzzle", ...}'*/
+
+
+     //$res = $client->request('POST', $urlTokenFieb, [
+     //     'auth' => ['Fieb.Educ', '!Fieb5778@Api', null]
+     // ]);
+     // echo $res->getStatusCode();
+      // "200"
+     // echo $res->getHeader('content-type')[0];
+      // 'application/json; charset=utf8'
+     // echo $res->getBody();
+
+     $response = $client->post($urlTokenFieb , [
+          'form_params' =>
+          [
+              'username' => 'Fieb.Educ',
+              'password' => '!Fieb5778@Api',
+              'grant_type' => 'password'
+          ]
+      ], [
+          'headers' => [
+              'encoding' => 'application/x-www-form-urlencoded'
+          ]
+      ]);
+
+    // echo $response->getStatusCode() . "<br>";
+     $body =  $response->getBody()->getContents();
+
+     $datas = json_decode($body,true);
+     //echo "<pre>";
+     //print_r($datas);
+     $access_token = $datas['access_token'];
+     $token_type = $datas['token_type'];
+     $expires_in = $datas['expires_in'];
+
+   // echo $access_token;
+    $client = new \GuzzleHttp\Client(['base_uri' => $urlBaseFieb]);
+    $headers = [
+        'Authorization' => 'Bearer ' . $access_token,
+        'Accept'        => 'application/json',
+    ];
+
+    $response = $client->request('POST', 'ConsultaAlunosFrequentes', [
+        'headers' => $headers
+    ]);
+
+    $body = $response->getBody()->getContents();
+    $datas = json_decode($body,true);
+
+   // echo "<pre>";
+    //print_r($datas);
+   // var_dump($datas);
+ foreach($datas['Object'] as $key=> $aluno){
+   echo "RSM: {$aluno['RSM']}<br>";
+   echo "NOME: {$aluno['NomeAluno']}<br>";
+   echo "DATA NASC.:{$aluno['DataNasc']}<br>";
+   echo "EMAIL:{$aluno ['email']}<br>";
+   echo "------------------------<br>";
+ }
+
+     /*
+     $response = $client->request('POST', $urlTokenFieb, [
+          'form_params' =>[
+               'username' => 'Fieb.Educ',
+               'password' => '!Fieb5778@Api',
+               'grant_type'=> 'password'
+          ]
+     ]);
+
+    // $response = json_decode($response->getBody());
+     echo $response->getStatusCode();
+      // "200"
+      echo $response->getHeader('content-type')[0];
+      // 'application/json; charset=utf8'
+      echo $response->getBody();
+      */
+    }
